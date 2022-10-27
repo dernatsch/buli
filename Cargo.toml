@@ -1,8 +1,20 @@
 [package]
 name = "buli"
+description = "Show Bundesliga results on the command line."
+homepage = "https://github.com/dernatsch/buli"
+repository = "https://github.com/dernatsch/buli"
+documentation = "https://docs.rs/buli"
+readme = "README.md"
+license = "Apache-2.0"
 version = "0.1.0"
 edition = "2021"
+categories = ["command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+clap = { version = "4.0.18", features = ["derive"] }
+reqwest = { version = "0.11.12", features = ["json", "blocking"] }
+serde = { version = "1.0.147", features = ["derive"] }
+serde_json = "1.0.87"
+tokio = { version = "1.21.2", features = ["full"] }
