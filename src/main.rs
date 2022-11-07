@@ -11,7 +11,7 @@ struct Args {
     day: bool,
 }
 
-#[derive(Debug,Clone,serde::Deserialize)]
+#[derive(Debug, Clone, serde::Deserialize)]
 struct MatchResults {
     #[serde(rename(deserialize = "PointsTeam1"))]
     points_home: i32,
@@ -19,7 +19,7 @@ struct MatchResults {
     points_away: i32,
 }
 
-#[derive(Debug,Clone,serde::Deserialize)]
+#[derive(Debug, Clone, serde::Deserialize)]
 struct Team {
     #[serde(rename(deserialize = "TeamName"))]
     teamname: String,
@@ -33,7 +33,7 @@ impl std::fmt::Display for Team {
     }
 }
 
-#[derive(Debug,Clone,serde::Deserialize)]
+#[derive(Debug, Clone, serde::Deserialize)]
 struct Match {
     #[serde(rename(deserialize = "Team1"))]
     team_home: Team,
@@ -47,15 +47,20 @@ impl std::fmt::Display for Match {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
         if self.results.len() > 0 {
             let result = &self.results[0];
-            write!(f, "{:>15} [{}:{}] {:15}",
-                   self.team_home.shortname,
-                   self.team_away.shortname,
-                   result.points_home,
-                   result.points_away)
+            write!(
+                f,
+                "{:>15} [{}:{}] {:15}",
+                self.team_home.shortname,
+                self.team_away.shortname,
+                result.points_home,
+                result.points_away
+            )
         } else {
-            write!(f, "{:>15}  vs.  {:15}",
-                   self.team_home.shortname,
-                   self.team_away.shortname)
+            write!(
+                f,
+                "{:>15}  vs.  {:15}",
+                self.team_home.shortname, self.team_away.shortname
+            )
         }
     }
 }
@@ -80,42 +85,64 @@ struct TableEntry {
 
 impl std::fmt::Display for TableEntry {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
-        write!(f, "{:24} {}:{}:{}\t{:2}:{:<2} {}",
-               self.teamname,
-               self.wins,
-               self.draws,
-               self.lost,
-               self.goals,
-               self.goals_opp,
-               self.points)
+        write!(
+            f,
+            "{:24} {}:{}:{}\t{:2}:{:<2} {}",
+            self.teamname,
+            self.wins,
+            self.draws,
+            self.lost,
+            self.goals,
+            self.goals_opp,
+            self.points
+        )
     }
 }
 
 fn print_table(table: &Vec<TableEntry>) {
     println!("    Team                     W:D:L\tG     P");
-    for (i,e) in table.iter().rev().enumerate() {
-        println!("{:2}. {}", i, e);
+    for (i, e) in table.iter().rev().enumerate() {
+        println!("{:2}. {}", i + 1, e);
     }
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
 
+    // if args.day {
+    //     let data = reqwest::blocking::get("https://www.openligadb.de/api/getmatchdata/bl1")?
+    //         .json::<Vec<Match>>()?;
+
+    //     for mmatch in data {
+    //         println!("{}", mmatch);
+    //     }
+
+    //     return Ok(())
+    // }
+
     if args.day {
-        let data = reqwest::blocking::get("https://www.openligadb.de/api/getmatchdata/bl1")?
-            .json::<Vec<Match>>()?;
+        match ureq::get("https://www.openligadb.de/api/getmatchdata/bl1").call() {
+            Ok(response) => {
+                let matches: Vec<Match> = response.into_json().unwrap();
 
-        for mmatch in data {
-            println!("{}", mmatch);
+                for mmatch in matches {
+                    println!("{}", mmatch);
+                }
+
+                return Ok(());
+            }
+            Err(_) => {}
         }
-
-        return Ok(())
+    } else {
+        match ureq::get("https://www.openligadb.de/api/getbltable/bl1/2022").call() {
+            Ok(response) => {
+                let mut table: Vec<TableEntry> = response.into_json().unwrap();
+                table.sort_by(|a, b| a.points.cmp(&b.points));
+                print_table(&table);
+            }
+            Err(_) => {}
+        }
     }
-
-    let mut table = reqwest::blocking::get("https://www.openligadb.de/api/getbltable/bl1/2022")?
-        .json::<Vec<TableEntry>>()?;
-    table.sort_by(|a, b| a.points.cmp(&b.points));
-    print_table(&table);
 
     Ok(())
 }
