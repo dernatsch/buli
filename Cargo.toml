@@ -6,7 +6,7 @@ repository = "https://github.com/dernatsch/buli"
 documentation = "https://docs.rs/buli"
 readme = "README.md"
 license = "Apache-2.0"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 categories = ["command-line-utilities"]
 

@@ -17,3 +17,7 @@ cargo install buli
 `buli` to show the table or `buli -d` for the current matchday.
 You can also use `buli -h` for help.
 
+## Changelog
+
+Version 0.1.1: Move from reqwest to ureq which saves a little binary size and a
+lot in build time and dependencies.
